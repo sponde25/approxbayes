@@ -2,10 +2,10 @@
   
     
         "post0": {
-            "title": "Fastpages Notebook Blog Post",
+            "title": "Molecular graph generation with PyTorch and PyGeometric",
             "content": "Introduction . Model . Results . Conclusion .",
-            "url": "https://sponde25.github.io/approxbayes/jupyter/2020/06/03/graphvae.html",
-            "relUrl": "/jupyter/2020/06/03/graphvae.html",
+            "url": "https://sponde25.github.io/approxbayes/graph%20generation/pytorch/pygeometric/tutorial/2020/06/03/graphvae.html",
+            "relUrl": "/graph%20generation/pytorch/pygeometric/tutorial/2020/06/03/graphvae.html",
             "date": " • Jun 3, 2020"
         }
         
