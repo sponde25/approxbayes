@@ -29,7 +29,7 @@
   
       ,"page1": {
           "title": "About Me",
-          "content": "This is where you put the contents of your About page. Like all your pages, it’s in Markdown format. . This website is powered by fastpages 1. . a blogging platform that natively supports Jupyter notebooks in addition to other formats. &#8617; . |",
+          "content": ". I am a doctoral candidate at Probabilistic Machine Learning at Aalto University advised by Prof. Samuel Kaski and Dr. Markus Heinonen. I did my Integrated Masters of Technology in Mathematics and Computing from Indian Institute of Technology(ISM), Dhanbad. . Office: A335, CS-building, Aalto, Konemiehentie 2, 02150 Espoo, Finland . Email: anirudh.jain@aalto.fi . Phone No.: +358 505051571, +91 8969257536 . Quote: “May all your minima be global.” .",
           "url": "https://sponde25.github.io/approxbayes/about/",
           "relUrl": "/about/",
           "date": ""
