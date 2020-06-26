@@ -123,7 +123,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      6 min read
+      8 min read
     
 </span></p>
 
@@ -555,7 +555,7 @@ MAX EDGE: 72
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Now we wrap up this section by writing a custom dataset class for PyTorch which combines the two representations $\mathcal{G}, (\mathcal{X}, \mathcal{A})$ and returns a mini batch of the combined representations. Our generative model is a VAE with an encoder $q_\phi (\textbf{z} | \mathcal{G})$ and a decoder $p_\theta (\mathcal{X}, \mathcal{A})$ parameterized by $\phi$ and $\theta$ respectively.</p>
+<p>The final step is to create a custom dataset for PyTorch which combines the two representations $\mathcal{G}$ and $(\mathcal{X}, \mathcal{A})$. The dataset returns a list containing the graph, atom label and edge label. We also define a <code>collate_fn</code> which creates mini batches for the data loader that we will need for training and testing our model.</p>
 
 </div>
 </div>
@@ -641,9 +641,61 @@ MAX EDGE: 72
 <div class="cell border-box-sizing text_cell rendered">
 <div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Now we wrap up this section by creating the train and test loaders with a mini batch of size <code>32</code>. We train the model on a subset of 500 molecules and test the reconstruction on 10000 molecules. To monitor training we look at three metrics averaged over the minibatch:</p>
+<ul>
+<li>cross-entropy loss over the atom and edge labels</li>
+<li>Atom label accuracy</li>
+<li>Edge label accuracy </li>
+</ul>
+
+</div>
+</div>
+</div>
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">GraphTensorDataset</span><span class="p">()</span>
+<span class="n">train_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">test_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># We set the random seed before the random split so we can get the same subset for reproducibility </span>
+<span class="n">trainset</span><span class="p">,</span> <span class="n">testset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">get_splits</span><span class="p">(</span><span class="n">train_size</span><span class="p">,</span> <span class="n">test_size</span><span class="p">)</span>
+<span class="n">trainloader</span> <span class="o">=</span> <span class="n">get_dataloader</span><span class="p">(</span><span class="n">trainset</span><span class="p">)</span>
+<span class="n">testloader</span> <span class="o">=</span> <span class="n">get_dataloader</span><span class="p">(</span><span class="n">testset</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Model">
 <a class="anchor" href="#Model" aria-hidden="true"><span class="octicon octicon-link"></span></a>Model<a class="anchor-link" href="#Model"> </a>
 </h1>
+<p>Our generative model is a VAE with an encoder $q_\phi (\textbf{z} | \mathcal{G})$ and a decoder $p_\theta (\mathcal{X}, \mathcal{A} | \textbf{z})$ parameterized by $\phi$ and $\theta$ respectively. We place a prior over the latent vector $\textbf{z} \sim \mathcal{N}(0, I)$ which act as a regularizer to our model. Our goal is to map the graph $\mathcal{G}$ into the latent vector $\textbf{z}$ and generate new graphs by using the decoder to map new latent vectors sampled from the prior.</p>
+<p><strong><em>Encoder</em></strong>: For a graph $\mathcal{G}(\mathcal{V}, \mathcal{E})$ with upto N nodes, we aim to map the graph to a latent vector $\textbf{z} \in \mathbb{R}^D$. We use graph convolution network(GCN) to learn graph level feature vector $h_{\mathcal{G}}$. For each node $\mathcal{v} \in \mathcal{V}$, GCN update the node level features as,
+\begin{equation}
+    h_{\mathcal{v}} = \sum_{\mathcal{u} \in Nbd(\mathcal{v}, \mathcal{G})}\Phi (W_l^T X_{\mathcal{u}})
+\end{equation}
+where $Nbd(\mathcal{v}, \mathcal{G})$ is the neighborhood of node $\mathcal{v}$ in graph $\mathcal{G}$, $W_l$ are the shared weights analogous to the kernel in convolution layer and $X_\mathcal{u}$ is the feature vector of node $\mathcal{u}$. 
+After 2 graph convolution layers, we create a graph level vector representation by taking the mean of all node feature vectors $h_{\mathcal{v}}$.
+\begin{equation}
+    h_{\mathcal{G}} = 1 / |\mathcal{V}| \sum_{\mathcal{v} \in \mathcal{V}} h_{\mathcal{v}}
+\end{equation}
+Now we use fully connected layers to learn the latent vector $\textbf{z}$ with the inference model as,
+\begin{equation}
+    q(\textbf{z}|\mathcal{G}) = \mathcal{N}(\textbf{z}|\mu(h_{\mathcal{G}}), \sigma^2(h_{\mathcal{G}}))
+\end{equation}</p>
+<p><a href="../images/encoder_arch.png" title="Visualization of the encoder architecture"></a></p>
+
 </div>
 </div>
 </div>
