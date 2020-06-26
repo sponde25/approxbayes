@@ -123,7 +123,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      8 min read
+      9 min read
     
 </span></p>
 
@@ -693,8 +693,23 @@ After 2 graph convolution layers, we create a graph level vector representation 
 Now we use fully connected layers to learn the latent vector $\textbf{z}$ with the inference model as,
 \begin{equation}
     q(\textbf{z}|\mathcal{G}) = \mathcal{N}(\textbf{z}|\mu(h_{\mathcal{G}}), \sigma^2(h_{\mathcal{G}}))
-\end{equation}</p>
+\end{equation}
+where $\mu(h_{\mathcal{G}})$ and $\sigma^2(h_{\mathcal{G}})$ are parameterized by neural networks to learn the latent space.</p>
 <p><img src="/approxbayes/images/copied_from_nb/../images/encoder_arch.png" alt="" title="Visualization of the encoder architecture"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Decoder</em></strong>: The primary problem with graph generation is that order of nodes can be arbritary which makes comparing two graphs a combatorial problem. We sidestep this problem by framing the graph generation problem as multi class classification problem. Keeping in the spirit of a toy example, we consider two independent classification problems.</p>
+<p>We train a decoder to predict atom and edge label vectors $(\mathcal{X}, \mathcal{A})$ respectively. We can train the model by using the standard VAE loss,
+\begin{equation}
+    \mathcal{L} = \alpha_{\mathcal{a}} \mathcal{L}_{\mathcal{a}} + \alpha_\mathcal{e} \mathcal{L}_{\mathcal{e}} + \alpha_{KL} KL[q(\textbf{z}|\mathcal{G}) | p(\textbf{z})]
+\end{equation}</p>
+<p>$\mathcal{L}_{\mathcal{a}}$ and $\mathcal{L}_{\mathcal{e}}$ are the cross entropy loss for multiclass vectors for atoms and edges respectively. This restricts the decoder to memorize the ordering for the atom labels and independently learn the edges based only on the latent vector $\textbf{z}$. We set $\alpha_\mathcal{a} = 1/|\mathcal{X}|$, $\alpha_\mathcal{e} = 1/|{\mathcal{A}}|$ and $\alpha_KL = 1/ 128$ so all three loses are on the same scale. $\mathcal{X}$ is the number of atoms in a mini batch, $|\mathcal{A}|$ is the number of edges in a mini batch and we set the dimension of the latent vector as $128$.</p>
+<p><img src="/approxbayes/images/copied_from_nb/../images/decoder_arch.png" alt="" title="Visualization of the decode architecture"></p>
 
 </div>
 </div>
