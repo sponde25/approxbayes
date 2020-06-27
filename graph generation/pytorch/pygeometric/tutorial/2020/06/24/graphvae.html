@@ -123,7 +123,7 @@ window.onload = wrap_img;
        • <span class="read-time" title="Estimated read time">
     
     
-      16 min read
+      17 min read
     
 </span></p>
 
@@ -256,10 +256,9 @@ window.onload = wrap_img;
 <p>We modify the data processing script in two ways:</p>
 <ul>
 <li>We strip hydrogen atoms from the molecules to keep only the heavy atoms</li>
-<li>We kekulize the molecules to convert aromatic rings to Kekule form
-The modified script can be found <a href="https://gist.github.com/sponde25/7dfa5492c21c007cf1e60a02dced1334">here</a>
-</li>
+<li>We kekulize the molecules to convert aromatic rings to Kekule form</li>
 </ul>
+<p>The modified script can be found <a href="https://gist.github.com/sponde25/7dfa5492c21c007cf1e60a02dced1334">here</a></p>
 <p>After processing the dataset, we have a set of molecules with 4 heavy atoms (C, N, O, F) and 3 bond types (SINGLE, DOUBLE and TRIPLE) with maximum graph size of 9.</p>
 <p>The decoder outputs the graph as one-hot encoded vectors for atoms <code>[9 x 5]</code> and bonds <code>[9 x 4]</code>. The label 0 represents empty atom or edge.</p>
 
@@ -1138,6 +1137,15 @@ where $\mu(h_{\mathcal{G}})$ and $\sigma^2(h_{\mathcal{G}})$ are parameterized b
 <h1 id="Results">
 <a class="anchor" href="#Results" aria-hidden="true"><span class="octicon octicon-link"></span></a>Results<a class="anchor-link" href="#Results"> </a>
 </h1>
+<p>We train the model on the dataset of 500 molecules and test on a dataset of 10,000 molecules for 100 epochs. The small size of the trainset leads to a large generalization gap and the model overfits on trainset with the atom and edge cross entropy loss decreasing but a flat test loss. The test atom classification accuracy converges at around 80% while the edge classification accuracy converges at around 75%. We only consider the labels with non-zero entry in the ground truth to calculate accuracy.</p>
+<p><img src="/approxbayes/images/copied_from_nb/../images/graphvae/train_test_curves.png" alt="" title="The train and test curves for the graphVAE model"></p>
+<p>Now we consider metrics to check the generative performance for molecules. We sample $n_s = 10,000$ latent vectors $\textbf{z}$ from the prior $\mathcal{N}(0, I)$ and use the trained decoder to generate new molecules. We use the following three metrics to test the quality of the learned latent space:</p>
+<ul>
+<li>Validity:     Let list $|V|$ represent chemically valid molecules, validity is the ratio $|V|/n_s$</li>
+<li>Uniqueness:   The set of chemically valid molecules $U = set(V)$, uniqueness is the ratio $|U|/|V|$</li>
+<li>Novelty:      Novelty is the set of elements in $U$ not in the trainset $|\mathcal{D}_{train}|$ defined as $1 - (U \cap \mathcal{D}_{train})/|U|$</li>
+</ul>
+
 </div>
 </div>
 </div>
